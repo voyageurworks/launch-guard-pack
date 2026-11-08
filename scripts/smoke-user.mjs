@@ -20,10 +20,16 @@ const check = (ok, what) => {
   if (!ok) failures.push(what);
 };
 
+// Windows command-line quoting: a backslash is special only in front of a quote (or the closing quote), where it is doubled.
+function quoteWindowsArg(a) {
+  if (!/[\s"]/.test(a)) return a;
+  return `"${a.replace(/(\\*)"/g, '$1$1\\"').replace(/(\\+)$/, "$1$1")}"`;
+}
+
 function run(command, args, options = {}) {
   // npm and the installed command are .cmd shims on Windows, which Node can only start through a shell. A shell joins
   // the arguments into one line, so an argument with a space (a path, or a label like "secret format") must be quoted.
-  const argv = windows ? args.map((a) => (/[\s"]/.test(a) ? `"${a.replace(/"/g, '\\"')}"` : a)) : args;
+  const argv = windows ? args.map(quoteWindowsArg) : args;
   const cmd = windows && /\s/.test(command) ? `"${command}"` : command;
   return spawnSync(cmd, argv, { encoding: "utf8", env, windowsHide: true, shell: windows, timeout: 180_000, ...options });
 }

@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- CI/test script only: `scripts/smoke-user.mjs` now quotes Windows arguments correctly when they contain a backslash before a quote (found by CodeQL, `js/incomplete-sanitization`). No change to the package.
+
 - CI only: a `CodeQL` workflow scans the TypeScript/JavaScript code on pushes to `main`, pull requests and weekly (results under Security > Code scanning; not a required check).
 
 - CI only: the `macOS monthly report` workflow also writes its facts (fixed words and numbers) to `status.json` on the `macos-report` branch, so an automatic reviewer can read them without the GitHub API.
