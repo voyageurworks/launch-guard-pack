@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Tests only: `src/freeRunners.test.ts` fails if a workflow uses a runner label that is not on the free list (larger, GPU, self-hosted or unknown runners could be billed), so the CI stays within GitHub's free tier.
+
 - CI/test script only: `scripts/smoke-user.mjs` now quotes Windows arguments correctly when they contain a backslash before a quote (found by CodeQL, `js/incomplete-sanitization`). No change to the package.
 
 - CI only: a `CodeQL` workflow scans the TypeScript/JavaScript code on pushes to `main`, pull requests and weekly (results under Security > Code scanning; not a required check).
