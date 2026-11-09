@@ -1,13 +1,20 @@
 # Changelog
 
-## Unreleased
+## 0.2.4 - 2026-11-09
+
+First-run polish; the report and `--json` are unchanged, and so are the exit codes except one (a missing git, below).
+
+- **Guided first run.** `launch-guard setup` asks what you want to check (a repository before it goes public, an npm package before you publish, or both) and prints every step with your folder filled in: the offline scan, the optional private list (what it is, that it stays outside every repository and is never printed), `--pack`, `--explain`, a git pre-push hook that needs only Node (it runs through `npx`) and, with `--ci`, a GitHub Actions job. It writes nothing, reads no list and runs no scan itself. Flags: `--check repo|package|both`, `--path`, `--ci`; no flags in a terminal asks; `--prompt` prints a block to paste into an AI assistant that can run commands ([docs/setup-prompt.md](docs/setup-prompt.md)).
+- **Next steps after every text report**, on the error stream (so what you paste from the report stays exactly the report): what to do about a failure, why a history finding needs more than deleting a line, that your own words were not checked until you create a private list, and the package check before `npm publish`.
+- **A missing git is no longer a pass.** With no `git` on the PATH the history could not be read, yet the scan used to end `RESULT: PASS` with exit code 0 and only "not a repository root", so a pre-push hook or CI job let it through. It now stops with exit code 2 (could not run) and says why; `--pack` does not need git and is unchanged. The one change to exit codes: 2 now also means "git not found" for a repository scan.
+- **docs/ci.md** shows a CI job that runs through `npx`, so nothing has to be copied into your repository (the copy-the-skill form is still described).
+- Tested from the packed tarball in a throwaway home, several runs: cold start, a folder with spaces, not a repository, no git, missing path, an unknown flag, `--pack` on a throwaway package.
+
+Also in this release (CI and tests only, no change to the program):
 
 - Tests only: `src/freeRunners.test.ts` fails if a workflow uses a runner label that is not on the free list (larger, GPU, self-hosted or unknown runners could be billed), so the CI stays within GitHub's free tier.
-
 - CI/test script only: `scripts/smoke-user.mjs` now quotes Windows arguments correctly when they contain a backslash before a quote (found by CodeQL, `js/incomplete-sanitization`). No change to the package.
-
 - CI only: a `CodeQL` workflow scans the TypeScript/JavaScript code on pushes to `main`, pull requests and weekly (results under Security > Code scanning; not a required check).
-
 - CI only: the `macOS monthly report` workflow also writes its facts (fixed words and numbers) to `status.json` on the `macos-report` branch, so an automatic reviewer can read them without the GitHub API.
 
 ## 0.2.3 - 2026-11-04

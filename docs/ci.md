@@ -44,9 +44,10 @@ jobs:
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: 22
-      # Path of launch-guard.mjs inside your repository (copy the skill/ folder in), or run it from a checkout of this project.
-      - run: node tools/launch-guard/launch-guard.mjs . --offline
+      - run: npx -y @voyageurworks/launch-guard-pack . --offline
 ```
+
+`launch-guard setup --ci` prints this same job. Prefer to keep the program inside your repository? Copy the `skill/` folder in and replace the last line with `- run: node tools/launch-guard/launch-guard.mjs . --offline` (the path of `launch-guard.mjs` inside your repository).
 
 The job fails (exit code 1) only on a blocking finding. To keep the report for other tools, add `--json` and save the output:
 

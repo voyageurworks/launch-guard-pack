@@ -8,7 +8,7 @@
       "name": "launch-guard",
       "source": "./",
       "description": "Scans a private git repo (or the npm package you are about to publish) for secrets, personal details, restricted terms and reachable old commits, and never prints what it finds.",
-      "version": "0.2.3",
+      "version": "0.2.4",
       "author": { "name": "Voyageur Works", "url": "https://github.com/voyageurworks" },
       "homepage": "https://github.com/voyageurworks/launch-guard-pack#readme",
       "repository": "https://github.com/voyageurworks/launch-guard-pack",

@@ -1,7 +1,7 @@
 {
   "name": "launch-guard",
   "description": "Check a private git repo before you make it public, without printing what it finds. Skill for Claude Code.",
-  "version": "0.2.3",
+  "version": "0.2.4",
   "author": {
     "name": "Voyageur Works",
     "url": "https://github.com/voyageurworks"

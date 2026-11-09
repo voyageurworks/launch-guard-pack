@@ -68,7 +68,7 @@ describe("main", () => {
       const c = capture();
       expect(await main([repo.root, "--list", join(list.root, "list.txt")], c.io)).toBe(0);
       expect(c.out.join("").trimEnd().endsWith("RESULT: PASS")).toBe(true);
-      expect(c.err).toEqual([]);
+      expect(c.err.join("")).toContain("Nothing blocks publishing");
     } finally {
       repo.cleanup();
       list.cleanup();

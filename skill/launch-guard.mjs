@@ -1642,9 +1642,9 @@ function remoteEnv(sshCommand, gitSsh) {
   return env;
 }
 function splitProgram(command) {
-  const quote = command[0] === '"' || command[0] === "'" ? command[0] : "";
-  if (quote !== "") {
-    const close = command.indexOf(quote, 1);
+  const quote2 = command[0] === '"' || command[0] === "'" ? command[0] : "";
+  if (quote2 !== "") {
+    const close = command.indexOf(quote2, 1);
     if (close > 0)
       return { program: command.slice(1, close), end: close + 1 };
   }
@@ -1747,6 +1747,135 @@ function checkReachability(root, options = {}) {
   return out;
 }
 
+// dist/setup.js
+import { createInterface } from "node:readline/promises";
+var PACKAGE = "@voyageurworks/launch-guard-pack";
+var GOALS = [
+  { id: "repo", name: "A private repository before I make it public" },
+  { id: "package", name: "An npm package before I publish it" },
+  { id: "both", name: "Both" }
+];
+var CI_JOB = `name: launch-guard
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 22
+      - run: npx -y ${PACKAGE} . --offline`;
+var HOOK_NPX = `#!/bin/sh
+# launch-guard pre-push hook. Save as .git/hooks/pre-push and make it executable (chmod +x).
+# A non-zero result stops the push: 1 means a blocking finding, 2 means the tool could not run.
+npx -y ${PACKAGE} . --offline || exit 1`;
+var SETUP_PROMPT = `Please check my project before I make it public or publish it, using launch-guard. It reports where a secret, personal detail or restricted word is (file and line) and never prints the value.
+1. Run: npx -y ${PACKAGE} setup --help
+2. Ask me what to check (a private repository before I make it public, an npm package before I publish it, or both) and which folder it is in.
+3. Run: npx -y ${PACKAGE} setup --check <repo|package|both> --path <folder>, then run each scan command it prints, one at a time.
+4. Never print, quote or guess a secret, and never open my private list file (~/.config/launch-guard/private-list.txt): if a step needs me to fill it in, tell me and wait.
+5. Tell me in plain words what blocks publishing, what is only advice, and what to do first. Do not change my files: I fix the findings myself.`;
+var USAGE = `Usage: launch-guard setup [--check repo|package|both] [--path <folder>] [--ci] [--prompt]
+  A guided first run: prints every step with your folder filled in. With no flags in a terminal it asks. It writes nothing and runs no scan itself.
+  --ci      also print a GitHub Actions job
+  --prompt  print a block to paste into an AI assistant that can run commands`;
+var quote = (value) => /[\s"']/.test(value) ? `"${value.replace(/\\/g, "\\\\").replace(/"/g, '\\"')}"` : value;
+function setupSteps(choice) {
+  const folder = quote(choice.windows ? choice.path.split("\\").join("/") : choice.path);
+  const indent = (text) => text.split("\n").map((line) => `     ${line}`).join("\n");
+  const steps = [];
+  if (choice.goal !== "package")
+    steps.push(`Scan the repository (offline: nothing is sent anywhere):
+${indent(`npx -y ${PACKAGE} ${folder} --offline`)}
+   It lists BLOCK (fix before publishing), WARN (advice) and INFO. Exit code 0 = nothing blocks, 1 = something does.`);
+  if (choice.goal !== "repo")
+    steps.push(`Scan what \`npm publish\` would upload (it packs into a temporary folder and never publishes):
+${indent(`npx -y ${PACKAGE} ${folder} --pack --offline`)}`);
+  steps.push(`Optional but recommended: a private list of your own words (your name, school, address, codewords) so it can find them too. The list stays on your computer, outside every repository, and is never printed. Create a template, then fill it in with your own editor:
+${indent(`npx -y ${PACKAGE} --init-list`)}
+   Without a list, those checks are skipped and the report says so.`);
+  steps.push(`Learn what a label means: \`npx -y ${PACKAGE} --explain "secret format"\` (use any label from the report). If an old commit holds a secret, deleting the line is not enough once the repository is public.`);
+  steps.push(`Optional: stop a push that would publish a problem. Save this as .git/hooks/pre-push and make it executable:
+${indent(HOOK_NPX)}`);
+  if (choice.ci)
+    steps.push(`Optional: run it in GitHub Actions. Save as .github/workflows/launch-guard.yml (a CI runner has no private list, so it covers secrets, history and basics):
+${indent(CI_JOB)}`);
+  return `launch-guard setup: ${GOALS.find((goal) => goal.id === choice.goal).name.toLowerCase()}
+Folder: ${folder}
+
+${steps.map((step, index) => `${index + 1}. ${step}`).join("\n\n")}`;
+}
+var flag = (args, name) => {
+  const at = args.indexOf(name);
+  return at >= 0 ? args[at + 1] : void 0;
+};
+async function setupCommand(args, io) {
+  if (args.includes("--help") || args.includes("-h"))
+    return io.out(`${USAGE}
+`), 0;
+  if (args.includes("--prompt"))
+    return io.out(`${SETUP_PROMPT}
+`), 0;
+  let goal = flag(args, "--check");
+  let path = flag(args, "--path");
+  if (io.interactive && io.ask) {
+    if (!goal) {
+      const answer = (await io.ask(`What do you want to check?
+${GOALS.map((g, index) => `  ${index + 1}. ${g.name}`).join("\n")}
+[1] > `)).trim();
+      goal = (/^\d+$/.test(answer) ? GOALS[Number(answer) - 1]?.id : answer) ?? "repo";
+      if (!answer)
+        goal = "repo";
+    }
+    if (!path)
+      path = (await io.ask(`Folder of the project [${io.cwd}] > `)).trim() || io.cwd;
+  }
+  goal ??= "repo";
+  path ??= io.cwd;
+  if (!GOALS.some((candidate) => candidate.id === goal))
+    return io.err(`launch-guard: unknown choice for --check. Use repo, package or both.
+${USAGE}
+`), 2;
+  io.out(`${setupSteps({ goal, path, ci: args.includes("--ci"), windows: (io.platform ?? process.platform) === "win32" })}
+`);
+  return 0;
+}
+function terminalAsk() {
+  const rl = createInterface({ input: process.stdin, output: process.stdout });
+  return { ask: (question) => rl.question(question), close: () => rl.close() };
+}
+function nextHints(labels, code, options) {
+  const has = (label) => labels.includes(label);
+  const hints = [];
+  if (code === 1)
+    hints.push('Fix each BLOCK (the file and line are shown), then run it again. What a label means: launch-guard --explain "<label>".');
+  else
+    hints.push("Nothing blocks publishing. WARN lines are advice; --fail-on warn makes them fail the run too.");
+  if (has("secret in history") || has("term in history"))
+    hints.push('A "history" finding means an old commit still holds it: deleting the line is not enough once the repository is public (launch-guard --explain "secret in history").');
+  if (has("not a repository root"))
+    hints.push("History was NOT checked: run it on the top folder of the git repository.");
+  if (has("checks skipped: no private list"))
+    hints.push("Not checked: your own words (name, school, codewords). Create a private list with: launch-guard --init-list");
+  if (!options.pack && code !== 1)
+    hints.push("Publishing to npm? Also run: launch-guard . --pack --offline");
+  hints.push("First time? launch-guard setup   (a guided walk-through)");
+  return hints;
+}
+
 // dist/cli.js
 var REAL = {
   listFiles: (root) => listRepoFiles(root, isEnvFile),
@@ -1758,8 +1887,8 @@ var REAL = {
   isRepoRoot,
   pack: runNpmPack
 };
-var USAGE = [
-  "Usage: launch-guard [path] [--list <file>] [--offline] [--json] [--pack] [--fail-on <block|warn>] [--init-list [file]] [--print-hook] [--explain <label>] [--help]",
+var USAGE2 = [
+  "Usage: launch-guard setup | launch-guard [path] [--list <file>] [--offline] [--json] [--pack] [--fail-on <block|warn>] [--init-list [file]] [--print-hook] [--explain <label>] [--help]",
   "",
   "Scans a git repository before it goes public and reports secrets, personal",
   "details, restricted terms and reachable old commits. It does not print a secret,",
@@ -1769,6 +1898,7 @@ var USAGE = [
   "remotes (skip it with --offline). The only file it writes is the template from",
   "--init-list.",
   "",
+  "  setup         a guided first run (run `launch-guard setup --help`)",
   "  path          repository to scan (default: the current directory)",
   "  --list <file> private list of personal and restricted patterns, kept outside the repo",
   "                (default: ~/.config/launch-guard/private-list.txt)",
@@ -1791,7 +1921,7 @@ var USAGE = [
   "Exit codes: 0 no blocking findings, 1 at least one blocking finding, 2 usage or setup problem.",
   ""
 ].join("\n");
-var HINT = "Usage: launch-guard [path] [--list <file>] [--offline] [--json] [--pack] [--fail-on <block|warn>] [--init-list [file]] [--print-hook] [--explain <label>] [--help]\n";
+var HINT = "Usage: launch-guard setup | launch-guard [path] [--list <file>] [--offline] [--json] [--pack] [--fail-on <block|warn>] [--init-list [file]] [--print-hook] [--explain <label>] [--help]\n";
 var FAIL_LABEL = `launch-guard: unknown label. Known labels:
 ${Object.keys(EXPLAIN).map((l) => `  ${l}`).join("\n")}
 `;
@@ -1802,6 +1932,7 @@ var FAIL_LIST = "launch-guard: the private list is missing, unreadable or invali
 var FAIL_ARGS = `launch-guard: unrecognised or incomplete arguments.
 ${HINT}`;
 var FAIL_RUN = "launch-guard: the scan could not be completed.\n";
+var FAIL_GIT = "launch-guard: git was not found on this computer, so the history cannot be checked and nothing was scanned (exit code 2, not a pass). Install git and run it again. `--pack` does not need git.\n";
 var FAIL_EXISTS = "launch-guard: that file already exists, so it was left unchanged.\n";
 var FAIL_IN_REPO = "launch-guard: the private list must live outside any git repository; choose another location.\n";
 var FAIL_INIT = "launch-guard: the template could not be written.\n";
@@ -1991,14 +2122,31 @@ async function main(argv, io, scanners = REAL) {
     return 2;
   }
 }
+function gitAvailable() {
+  try {
+    execFileSync5("git", ["--version"], { stdio: "ignore", timeout: GIT_QUICK_TIMEOUT_MS });
+    return true;
+  } catch {
+    return false;
+  }
+}
 async function run(argv, io, scanners) {
+  if (argv[0] === "setup") {
+    const interactive = Boolean(process.stdin.isTTY && process.stdout.isTTY) && !argv.includes("--help") && !argv.includes("--prompt");
+    const terminal = interactive ? terminalAsk() : void 0;
+    try {
+      return await setupCommand(argv.slice(1), { ...io, ask: terminal?.ask, interactive, cwd: process.cwd() });
+    } finally {
+      terminal?.close();
+    }
+  }
   const args = parseArgs(argv);
   if (args === null) {
     io.err(FAIL_ARGS);
     return 2;
   }
   if (args.help) {
-    io.out(USAGE);
+    io.out(USAGE2);
     return 0;
   }
   if (args.hook) {
@@ -2040,6 +2188,10 @@ async function run(argv, io, scanners) {
   } else {
     findings.push(note3("info", "checks skipped: no private list"));
   }
+  if (!args.pack && !gitAvailable()) {
+    io.err(FAIL_GIT);
+    return 2;
+  }
   if (args.pack) {
     const outcome = scanPackage(root, entries, {
       pack: scanners.pack ?? runNpmPack,
@@ -2073,6 +2225,9 @@ async function run(argv, io, scanners) {
   }
   io.out(renderReport(findings));
   io.out(`RESULT: ${code === 1 ? "FAIL" : "PASS"}
+`);
+  io.err(`
+${nextHints(findings.map((f) => f.label), code, { pack: args.pack }).map((line) => `- ${line}`).join("\n")}
 `);
   return code;
 }
