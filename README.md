@@ -79,6 +79,12 @@ Claude Code, two commands (see [the plugin page](docs/claude-code-plugin.md)):
 
 Codex and other tools: copy the `skill/` folder into the tool's skills directory. The step-by-step page for a first publish is [Check a repository before making it public](docs/check-a-repo-before-making-it-public.md).
 
+## Guided first run
+
+New here? `npx -y @voyageurworks/launch-guard-pack setup` asks what you want to check (a repository before it goes public, an npm package before you publish it, or both) and prints every step with your folder filled in: the scan, the optional private list, the check before `npm publish`, a git hook and, with `--ci`, a GitHub Actions job. It writes nothing and runs no scan itself. Or paste [a ready-made prompt](docs/setup-prompt.md) into an AI assistant that can run commands.
+
+After every report it also says, on the error stream, what to do next (what a label means, that history findings need more than deleting a line, that your own words were not checked until you create a private list).
+
 ## First run, no setup
 
 ```

@@ -17,6 +17,7 @@ import { scanHistory } from "./scan/history.js";
 import { checkReachability } from "./scan/reachability.js";
 import { scanSecrets } from "./scan/secrets.js";
 import { scanTerms } from "./scan/terms.js";
+import { nextHints, setupCommand, terminalAsk } from "./setup.js";
 import type { Finding } from "./types.js";
 
 export interface Io {
@@ -51,7 +52,7 @@ const REAL: Scanners = {
 };
 
 const USAGE = [
-  "Usage: launch-guard [path] [--list <file>] [--offline] [--json] [--pack] [--fail-on <block|warn>] [--init-list [file]] [--print-hook] [--explain <label>] [--help]",
+  "Usage: launch-guard setup | launch-guard [path] [--list <file>] [--offline] [--json] [--pack] [--fail-on <block|warn>] [--init-list [file]] [--print-hook] [--explain <label>] [--help]",
   "",
   "Scans a git repository before it goes public and reports secrets, personal",
   "details, restricted terms and reachable old commits. It does not print a secret,",
@@ -61,6 +62,7 @@ const USAGE = [
   "remotes (skip it with --offline). The only file it writes is the template from",
   "--init-list.",
   "",
+  "  setup         a guided first run (run `launch-guard setup --help`)",
   "  path          repository to scan (default: the current directory)",
   "  --list <file> private list of personal and restricted patterns, kept outside the repo",
   "                (default: ~/.config/launch-guard/private-list.txt)",
@@ -84,7 +86,7 @@ const USAGE = [
   "",
 ].join("\n");
 
-const HINT = "Usage: launch-guard [path] [--list <file>] [--offline] [--json] [--pack] [--fail-on <block|warn>] [--init-list [file]] [--print-hook] [--explain <label>] [--help]\n";
+const HINT = "Usage: launch-guard setup | launch-guard [path] [--list <file>] [--offline] [--json] [--pack] [--fail-on <block|warn>] [--init-list [file]] [--print-hook] [--explain <label>] [--help]\n";
 const FAIL_LABEL = `launch-guard: unknown label. Known labels:\n${Object.keys(EXPLAIN).map((l) => `  ${l}`).join("\n")}\n`;
 const FAIL_PATH = "launch-guard: the target path is not a readable directory.\n";
 const FAIL_PACK_BUILD = "launch-guard: the package could not be built.\n";
@@ -298,7 +300,26 @@ export async function main(argv: string[], io: Io, scanners: Scanners = REAL): P
   }
 }
 
+/** Whether the git program can be started at all (a missing git makes the history check impossible, which is not the same as a plain folder). */
+function gitAvailable(): boolean {
+  try {
+    execFileSync("git", ["--version"], { stdio: "ignore", timeout: GIT_QUICK_TIMEOUT_MS });
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 async function run(argv: string[], io: Io, scanners: Scanners): Promise<0 | 1 | 2> {
+  if (argv[0] === "setup") {
+    const interactive = Boolean(process.stdin.isTTY && process.stdout.isTTY) && !argv.includes("--help") && !argv.includes("--prompt");
+    const terminal = interactive ? terminalAsk() : undefined;
+    try {
+      return await setupCommand(argv.slice(1), { ...io, ask: terminal?.ask, interactive, cwd: process.cwd() });
+    } finally {
+      terminal?.close();
+    }
+  }
   const args = parseArgs(argv);
   if (args === null) {
     io.err(FAIL_ARGS);
@@ -381,5 +402,7 @@ async function run(argv: string[], io: Io, scanners: Scanners): Promise<0 | 1 | 
   }
   io.out(renderReport(findings));
   io.out(`RESULT: ${code === 1 ? "FAIL" : "PASS"}\n`);
+  const gitMissing = findings.some((f) => f.label === "not a repository root") && !gitAvailable();
+  io.err(`\n${nextHints(findings.map((f) => f.label), code, { pack: args.pack, gitMissing }).map((line) => `- ${line}`).join("\n")}\n`);
   return code;
 }
