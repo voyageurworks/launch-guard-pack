@@ -1,0 +1,20 @@
+{
+  "name": "launch-guard",
+  "description": "Check a private git repo before you make it public, without printing what it finds. Skill for Claude Code.",
+  "version": "0.2.3",
+  "author": {
+    "name": "Voyageur Works",
+    "url": "https://github.com/voyageurworks"
+  },
+  "homepage": "https://github.com/voyageurworks/launch-guard-pack#readme",
+  "repository": "https://github.com/voyageurworks/launch-guard-pack",
+  "license": "MIT",
+  "keywords": [
+    "security",
+    "secrets",
+    "pre-publish",
+    "git",
+    "claude-code"
+  ],
+  "skills": "./skill"
+}
