@@ -70,6 +70,15 @@ Use gitleaks or TruffleHog for continuous scanning and to check live credentials
 
 ## Use it as a Claude Code or Codex skill
 
+Claude Code, two commands (see [the plugin page](docs/claude-code-plugin.md)):
+
+```
+/plugin marketplace add voyageurworks/launch-guard-pack
+/plugin install launch-guard@voyageurworks-launch-guard
+```
+
+Codex and other tools: copy the `skill/` folder into the tool's skills directory. The step-by-step page for a first publish is [Check a repository before making it public](docs/check-a-repo-before-making-it-public.md).
+
 ## First run, no setup
 
 ```
