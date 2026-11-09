@@ -60,7 +60,7 @@ const USAGE = `Usage: launch-guard setup [--check repo|package|both] [--path <fo
 
 export type SetupChoice = { goal: Goal; path: string; ci: boolean; windows: boolean };
 
-const quote = (value: string) => (/[\s"']/.test(value) ? `"${value.replace(/"/g, '\\"')}"` : value);
+const quote = (value: string) => (/[\s"']/.test(value) ? `"${value.replace(/\\/g, "\\\\").replace(/"/g, '\\"')}"` : value);
 
 /** Every step as text. Pure, so it can be tested for each choice and system. */
 export function setupSteps(choice: SetupChoice): string {

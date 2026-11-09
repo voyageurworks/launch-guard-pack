@@ -1792,7 +1792,7 @@ var USAGE = `Usage: launch-guard setup [--check repo|package|both] [--path <fold
   A guided first run: prints every step with your folder filled in. With no flags in a terminal it asks. It writes nothing and runs no scan itself.
   --ci      also print a GitHub Actions job
   --prompt  print a block to paste into an AI assistant that can run commands`;
-var quote = (value) => /[\s"']/.test(value) ? `"${value.replace(/"/g, '\\"')}"` : value;
+var quote = (value) => /[\s"']/.test(value) ? `"${value.replace(/\\/g, "\\\\").replace(/"/g, '\\"')}"` : value;
 function setupSteps(choice) {
   const folder = quote(choice.windows ? choice.path.split("\\").join("/") : choice.path);
   const indent = (text) => text.split("\n").map((line) => `     ${line}`).join("\n");

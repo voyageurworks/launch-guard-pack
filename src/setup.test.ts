@@ -107,3 +107,11 @@ describe("the documents carry the same text the command prints", () => {
     expect(HOOK_NPX).toMatch(/npx -y @voyageurworks\/launch-guard-pack \. --offline \|\| exit 1/);
   });
 });
+
+describe("quoting a folder name", () => {
+  it("escapes backslashes before quotes", () => {
+    const bs = String.fromCharCode(92);
+    const text = setupSteps({ goal: "repo", path: `/work/a b${bs}c"d`, windows: false, ci: false });
+    expect(text).toContain(`"/work/a b${bs}${bs}c${bs}"d"`);
+  });
+});
