@@ -18,7 +18,7 @@ claude plugin install launch-guard@voyageurworks-launch-guard
 
 ## What was run
 
-On 2026-11-09 the manifests passed `claude plugin validate`, and the marketplace and plugin were added and installed from a local clone in a throwaway home with Claude Code 2.1.319 on Windows 11; `claude plugin details launch-guard` listed one skill, no hooks, no agents and no MCP servers. Installing from the GitHub name above was not run before the pull request merged.
+On 2026-11-09 the manifests passed `claude plugin validate`, and the marketplace and plugin were added and installed from a local clone in a throwaway home with Claude Code 2.1.319 on Windows 11; `claude plugin details launch-guard` listed one skill, no hooks, no agents and no MCP servers. After the pull request merged, the same two commands were run against the GitHub name `voyageurworks/launch-guard-pack` in a fresh throwaway home and installed the plugin with its one skill.
 
 ## Other assistants
 
