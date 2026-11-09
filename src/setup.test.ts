@@ -63,19 +63,36 @@ describe("the setup command", () => {
 });
 
 describe("next-step hints", () => {
-  const options = { pack: false, gitMissing: false };
+  const options = { pack: false };
   it("says what to do for a failure, a pass, history findings, a plain folder and a missing list", () => {
     expect(nextHints(["secret format"], 1, options).join("\n")).toMatch(/Fix each BLOCK/);
     expect(nextHints([], 0, options).join("\n")).toMatch(/Nothing blocks publishing/);
     expect(nextHints(["secret in history"], 1, options).join("\n")).toMatch(/old commit still holds it/);
     expect(nextHints(["not a repository root"], 0, options).join("\n")).toMatch(/top folder of the git repository/);
-    expect(nextHints(["not a repository root"], 0, { ...options, gitMissing: true }).join("\n")).toMatch(/git was not found/);
     expect(nextHints(["checks skipped: no private list"], 0, options).join("\n")).toMatch(/--init-list/);
   });
   it("suggests the package check only when it was not the one that ran, and never holds a path or a value", () => {
     expect(nextHints([], 0, options).join("\n")).toMatch(/--pack/);
     expect(nextHints([], 0, { ...options, pack: true }).join("\n")).not.toMatch(/Publishing to npm/);
     expect(nextHints(["secret format"], 1, options).join("\n")).not.toMatch(/[\\/]\w+\.\w+/);
+  });
+});
+
+describe("a repository scan that cannot read history does not pass", () => {
+  it("exits 2 with one fixed message when git cannot be started", async () => {
+    const saved = process.env.PATH;
+    const c = capture();
+    try {
+      process.env.PATH = "";
+      process.env.Path = "";
+      expect(await main([resolve(root), "--offline"], c.io)).toBe(2);
+    } finally {
+      process.env.PATH = saved;
+      process.env.Path = saved;
+    }
+    expect(c.err.join("")).toMatch(/git was not found/);
+    expect(c.err.join("")).toMatch(/exit code 2, not a pass/);
+    expect(c.out.join("")).not.toMatch(/RESULT/);
   });
 });
 

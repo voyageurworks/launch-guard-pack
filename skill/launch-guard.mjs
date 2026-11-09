@@ -1867,7 +1867,7 @@ function nextHints(labels, code, options) {
   if (has("secret in history") || has("term in history"))
     hints.push('A "history" finding means an old commit still holds it: deleting the line is not enough once the repository is public (launch-guard --explain "secret in history").');
   if (has("not a repository root"))
-    hints.push(options.gitMissing ? "History was NOT checked because git was not found on this computer. Install git, then run it again." : "History was NOT checked: run it on the top folder of the git repository.");
+    hints.push("History was NOT checked: run it on the top folder of the git repository.");
   if (has("checks skipped: no private list"))
     hints.push("Not checked: your own words (name, school, codewords). Create a private list with: launch-guard --init-list");
   if (!options.pack && code !== 1)
@@ -1932,6 +1932,7 @@ var FAIL_LIST = "launch-guard: the private list is missing, unreadable or invali
 var FAIL_ARGS = `launch-guard: unrecognised or incomplete arguments.
 ${HINT}`;
 var FAIL_RUN = "launch-guard: the scan could not be completed.\n";
+var FAIL_GIT = "launch-guard: git was not found on this computer, so the history cannot be checked and nothing was scanned (exit code 2, not a pass). Install git and run it again. `--pack` does not need git.\n";
 var FAIL_EXISTS = "launch-guard: that file already exists, so it was left unchanged.\n";
 var FAIL_IN_REPO = "launch-guard: the private list must live outside any git repository; choose another location.\n";
 var FAIL_INIT = "launch-guard: the template could not be written.\n";
@@ -2187,6 +2188,10 @@ async function run(argv, io, scanners) {
   } else {
     findings.push(note3("info", "checks skipped: no private list"));
   }
+  if (!args.pack && !gitAvailable()) {
+    io.err(FAIL_GIT);
+    return 2;
+  }
   if (args.pack) {
     const outcome = scanPackage(root, entries, {
       pack: scanners.pack ?? runNpmPack,
@@ -2221,9 +2226,8 @@ async function run(argv, io, scanners) {
   io.out(renderReport(findings));
   io.out(`RESULT: ${code === 1 ? "FAIL" : "PASS"}
 `);
-  const gitMissing = findings.some((f) => f.label === "not a repository root") && !gitAvailable();
   io.err(`
-${nextHints(findings.map((f) => f.label), code, { pack: args.pack, gitMissing }).map((line) => `- ${line}`).join("\n")}
+${nextHints(findings.map((f) => f.label), code, { pack: args.pack }).map((line) => `- ${line}`).join("\n")}
 `);
   return code;
 }

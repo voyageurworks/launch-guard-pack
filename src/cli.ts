@@ -94,6 +94,7 @@ const FAIL_PACK_READ = "launch-guard: the package could not be read.\n";
 const FAIL_LIST = "launch-guard: the private list is missing, unreadable or invalid.\n";
 const FAIL_ARGS = `launch-guard: unrecognised or incomplete arguments.\n${HINT}`;
 const FAIL_RUN = "launch-guard: the scan could not be completed.\n";
+const FAIL_GIT = "launch-guard: git was not found on this computer, so the history cannot be checked and nothing was scanned (exit code 2, not a pass). Install git and run it again. `--pack` does not need git.\n";
 
 const FAIL_EXISTS = "launch-guard: that file already exists, so it was left unchanged.\n";
 const FAIL_IN_REPO = "launch-guard: the private list must live outside any git repository; choose another location.\n";
@@ -367,6 +368,12 @@ async function run(argv: string[], io: Io, scanners: Scanners): Promise<0 | 1 | 
     findings.push(note("info", "checks skipped: no private list"));
   }
 
+  // A repository scan that cannot read history must not look like a pass to a hook or a CI job: it stops with "could not run".
+  if (!args.pack && !gitAvailable()) {
+    io.err(FAIL_GIT);
+    return 2;
+  }
+
   if (args.pack) {
     // The tarball has no history and no remotes, so only the content scanners run, against what would ship.
     const outcome = scanPackage(root, entries, {
@@ -402,7 +409,6 @@ async function run(argv: string[], io: Io, scanners: Scanners): Promise<0 | 1 | 
   }
   io.out(renderReport(findings));
   io.out(`RESULT: ${code === 1 ? "FAIL" : "PASS"}\n`);
-  const gitMissing = findings.some((f) => f.label === "not a repository root") && !gitAvailable();
-  io.err(`\n${nextHints(findings.map((f) => f.label), code, { pack: args.pack, gitMissing }).map((line) => `- ${line}`).join("\n")}\n`);
+  io.err(`\n${nextHints(findings.map((f) => f.label), code, { pack: args.pack }).map((line) => `- ${line}`).join("\n")}\n`);
   return code;
 }

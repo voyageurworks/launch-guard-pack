@@ -228,7 +228,7 @@ For a harmless match (a test file, a documented example) put `launch-guard-allow
 - **warn**: look at it.
 - **info**: a note, such as a skipped file or a missing list.
 
-Exit code `0` means no blocking findings, `1` means at least one blocking finding, and `2` means the tool could not run (a bad path, a bad list, or an internal error, which prints one fixed message and nothing else).
+Exit code `0` means no blocking findings, `1` means at least one blocking finding, and `2` means the tool could not run (a bad path, a bad list, git not found for a repository scan, since history cannot then be read and a scan must not pass without it, or an internal error, which prints one fixed message and nothing else).
 
 `PASS` is not a promise that the repository is safe. It means these checks found nothing that blocks.
 

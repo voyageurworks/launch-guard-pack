@@ -114,13 +114,13 @@ export function terminalAsk(): { ask: (question: string) => Promise<string>; clo
  * What to do next, for the text report only (printed on stderr, so what is pasted from stdout stays exactly the report). Built from
  * fixed labels and the exit code, never from a path or a value.
  */
-export function nextHints(labels: string[], code: number, options: { pack: boolean; gitMissing: boolean }): string[] {
+export function nextHints(labels: string[], code: number, options: { pack: boolean }): string[] {
   const has = (label: string) => labels.includes(label);
   const hints: string[] = [];
   if (code === 1) hints.push('Fix each BLOCK (the file and line are shown), then run it again. What a label means: launch-guard --explain "<label>".');
   else hints.push("Nothing blocks publishing. WARN lines are advice; --fail-on warn makes them fail the run too.");
   if (has("secret in history") || has("term in history")) hints.push('A "history" finding means an old commit still holds it: deleting the line is not enough once the repository is public (launch-guard --explain "secret in history").');
-  if (has("not a repository root")) hints.push(options.gitMissing ? "History was NOT checked because git was not found on this computer. Install git, then run it again." : "History was NOT checked: run it on the top folder of the git repository.");
+  if (has("not a repository root")) hints.push("History was NOT checked: run it on the top folder of the git repository.");
   if (has("checks skipped: no private list")) hints.push("Not checked: your own words (name, school, codewords). Create a private list with: launch-guard --init-list");
   if (!options.pack && code !== 1) hints.push("Publishing to npm? Also run: launch-guard . --pack --offline");
   hints.push("First time? launch-guard setup   (a guided walk-through)");
