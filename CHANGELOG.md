@@ -2,7 +2,7 @@
 
 ## 0.2.4 - 2026-11-09
 
-First-run polish; the report, the exit codes and `--json` are unchanged.
+First-run polish; the report and `--json` are unchanged, and so are the exit codes except one (a missing git, below).
 
 - **Guided first run.** `launch-guard setup` asks what you want to check (a repository before it goes public, an npm package before you publish, or both) and prints every step with your folder filled in: the offline scan, the optional private list (what it is, that it stays outside every repository and is never printed), `--pack`, `--explain`, a git pre-push hook that needs only Node (it runs through `npx`) and, with `--ci`, a GitHub Actions job. It writes nothing, reads no list and runs no scan itself. Flags: `--check repo|package|both`, `--path`, `--ci`; no flags in a terminal asks; `--prompt` prints a block to paste into an AI assistant that can run commands ([docs/setup-prompt.md](docs/setup-prompt.md)).
 - **Next steps after every text report**, on the error stream (so what you paste from the report stays exactly the report): what to do about a failure, why a history finding needs more than deleting a line, that your own words were not checked until you create a private list, and the package check before `npm publish`.
