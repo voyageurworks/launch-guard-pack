@@ -277,6 +277,13 @@ Issues and pull requests are welcome; please read the [code of conduct](CODE_OF_
 
 To report a vulnerability, including any case where the tool prints something private, see [SECURITY.md](SECURITY.md).
 
+## More from Voyageur Works
+
+Separate tools from the same studio; each works without the others.
+
+- [handoff-desk](https://github.com/voyageurworks/handoff-desk): hand tasks from Claude Code, Cursor or Codex to a personal agent that reads a folder of markdown notes.
+- [mcp-proof](https://github.com/voyageurworks/mcp-proof): prove an MCP server really starts in real clients, with dated, labelled evidence you can paste into a README.
+
 ## Licence
 
 MIT. See [LICENSE](LICENSE).
