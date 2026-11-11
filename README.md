@@ -55,18 +55,18 @@ launch-guard is built so that cannot happen. It only reports **where** something
 
 ## Next to gitleaks and TruffleHog
 
-launch-guard does not replace a general secret scanner; run those too. They are built for other jobs. Everything in the right-hand column comes from their own READMEs (checked 2026-11-02).
+launch-guard does not replace a general secret scanner; run those too. They are built for other jobs. Everything in the right-hand column comes from their own READMEs (checked 2026-11-02; the gitleaks column re-read 2026-11-11).
 
 | | launch-guard | [gitleaks](https://github.com/gitleaks/gitleaks), [TruffleHog](https://github.com/trufflesecurity/trufflehog) |
 | --- | --- | --- |
 | Main question | "Is this repository safe to make public?" | "Where are the secrets in this code, history or data source?" |
-| What a finding shows | File and line, kind of problem, which list entry matched. Never the value, an author or a commit message. | gitleaks' documented `git -v` output shows the matched secret, the author, the email and the commit. |
+| What a finding shows | File and line, kind of problem, which list entry matched. Never the value, an author or a commit message. | gitleaks' documented `git -v` output shows the matched secret, the author, the email and the commit; its `--redact` option hides secrets from logs and stdout (not run here). |
 | Your own private words (names, address, school, codewords) | Checked from a private list that stays outside the repository | Not their purpose (gitleaks can be given custom rules) |
 | Where it looks | One git repository: files, history, tags, reflog, leftover refs | gitleaks: git repositories, directories and stdin. TruffleHog also scans chats, wikis, object stores and more |
 | Secret formats | A focused set of known formats plus assignments next to words like key or token | TruffleHog classifies 800+ secret types and can check whether a credential is still live |
 | Built to be run by an AI assistant | Yes: the output is safe to appear in a chat | Not what they are designed around |
 
-Use gitleaks or TruffleHog for continuous scanning and to check live credentials. Use launch-guard as the last check before you press "make public", and whenever an AI assistant is the one running it.
+Use gitleaks or TruffleHog for continuous scanning and to check live credentials. Use launch-guard as the last check before you press "make public", and whenever an AI assistant is the one running it. On 2026-11-11 the gitleaks README says gitleaks is "feature complete", that future releases will be security patches only, and that its author is shifting focus to a project called Betterleaks; look at which scanner is being maintained before you pick one. How to check what any scanner prints: [Can I let an AI assistant run a secret scanner?](docs/can-an-ai-assistant-run-a-secret-scanner.md).
 
 ## Use it as a Claude Code or Codex skill
 
