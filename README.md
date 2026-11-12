@@ -104,7 +104,7 @@ npx -y @voyageurworks/launch-guard-pack <repo>
 
 ## Check what `npm publish` would ship: `--pack`
 
-A clean repository can still publish a leaky package, because what `npm publish` uploads is decided by `files`, `.npmignore` and `.gitignore`, not by what you committed. Assistant settings, `.env` files and source maps are easy to include by accident. `--pack` checks the package, not the repository:
+A clean repository can still publish a leaky package, because what `npm publish` uploads is decided by `files`, `.npmignore` and `.gitignore`, not by what you committed. A worked example with real output, before and after: [What will `npm publish` upload?](docs/what-will-npm-publish-upload.md). Assistant settings, `.env` files and source maps are easy to include by accident. `--pack` checks the package, not the repository:
 
 ```
 npx -y @voyageurworks/launch-guard-pack . --pack --offline
