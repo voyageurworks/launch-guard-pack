@@ -1,3 +1,5 @@
+<img src=".github/brand/banner.jpg" width="100%" alt="A lighthouse beam passing over a grid of files, one of them marked.">
+
 <img src=".github/brand/icon.png" align="right" width="112" alt="launch-guard icon">
 
 # launch-guard
