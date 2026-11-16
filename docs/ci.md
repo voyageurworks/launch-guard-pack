@@ -49,7 +49,7 @@ jobs:
 
 ## The launch-guard Action (shorter)
 
-The repository root holds a composite Action, so the three steps after checkout can be one line. It always runs `--offline`, runs the published `@voyageurworks/launch-guard-pack` (it needs Node 22 or newer, so keep the `setup-node` step), and writes the report into the job summary. The report holds file names and line numbers only, so treat the summary like the repository.
+The repository root holds a composite Action, so the scan step (`npx -y @voyageurworks/launch-guard-pack . --offline`) becomes one `uses:` line. You still need checkout with full history and `setup-node`. It always runs `--offline`, runs the published `@voyageurworks/launch-guard-pack` (it needs Node 22 or newer, so keep the `setup-node` step), and writes the report into the job summary. The report holds file names and line numbers only, so treat the summary like the repository.
 
 ```yaml
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -64,7 +64,7 @@ The repository root holds a composite Action, so the three steps after checkout 
           fail-on: block
 ```
 
-Inputs: `path` (default `.`), `pack` (`true` scans what `npm pack` would upload, default `false`), `fail-on` (`block` or `warn`, default `block`) and `version` (a version range of the npm package, default `0`). The step exits 1 on a finding at or above `fail-on`, and 2 on a bad input or a Node older than 22. `@main` follows the latest code; pin a commit SHA if you want the Action fixed (a version tag will come with the next release). It is not listed in the GitHub Marketplace yet.
+Inputs: `path` (default `.`), `pack` (`true` scans what `npm pack` would upload, default `false`), `fail-on` (`block` or `warn`, default `block`) and `version` (a version range of the npm package, default `0`). The step exits 1 on a finding at or above `fail-on`, and 2 on a bad input or a Node older than 22. `@main` follows the latest code; pin a commit SHA if you want the Action fixed (there is no version tag yet). It is not listed in the GitHub Marketplace yet.
 
 `launch-guard setup --ci` prints this same job. Prefer to keep the program inside your repository? Copy the `skill/` folder in and replace the last line with `- run: node tools/launch-guard/launch-guard.mjs . --offline` (the path of `launch-guard.mjs` inside your repository).
 
