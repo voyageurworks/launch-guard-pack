@@ -1,0 +1,56 @@
+name: launch-guard
+description: Scan a git repository (or the npm package you are about to publish) for secrets, reachable old commits and basic publishing gaps before it goes public. Report-only; prints no secret. The personal and restricted-term checks need a private list, so they run only on your own machine.
+author: Voyageur Works
+branding:
+  icon: shield
+  color: blue
+
+inputs:
+  path:
+    description: The repository (or package folder, with pack) to scan. Default is the checked-out workspace.
+    required: false
+    default: "."
+  pack:
+    description: Scan what `npm pack` would upload instead of the repository ("true" or "false"). Build the package first if its published files are generated.
+    required: false
+    default: "false"
+  fail-on:
+    description: The lowest level that fails the step, "block" or "warn".
+    required: false
+    default: "block"
+  version:
+    description: Version range of @voyageurworks/launch-guard-pack to run.
+    required: false
+    default: "0"
+
+runs:
+  using: composite
+  steps:
+    # Inputs reach the shell only through environment variables, never by being pasted into the script text.
+    - name: Run launch-guard
+      shell: bash
+      env:
+        LG_PATH: ${{ inputs.path }}
+        LG_PACK: ${{ inputs.pack }}
+        LG_FAIL_ON: ${{ inputs.fail-on }}
+        LG_VERSION: ${{ inputs.version }}
+      run: |
+        set -euo pipefail
+        major="$(node -p "process.versions.node.split('.')[0]")"
+        if [ "$major" -lt 22 ]; then
+          echo "::error::launch-guard needs Node 22 or newer. Add actions/setup-node with node-version: 22 before this step."
+          exit 2
+        fi
+        case "$LG_FAIL_ON" in block|warn) ;; *) echo "::error::fail-on must be block or warn."; exit 2 ;; esac
+        case "$LG_PACK" in true|false) ;; *) echo "::error::pack must be true or false."; exit 2 ;; esac
+        # A CI runner has no private list and nothing to gain from the remote check, so always run offline.
+        args=("$LG_PATH" --offline --fail-on "$LG_FAIL_ON")
+        if [ "$LG_PACK" = "true" ]; then args+=(--pack); fi
+        report="${RUNNER_TEMP:-/tmp}/launch-guard-report.txt"
+        code=0
+        # npm exec takes a registry spec; npx would also work but npm exec keeps the argument list unambiguous.
+        npm exec --yes --package="@voyageurworks/launch-guard-pack@${LG_VERSION}" -- launch-guard "${args[@]}" 2>&1 | tee "$report" || code=${PIPESTATUS[0]}
+        if [ -n "${GITHUB_STEP_SUMMARY:-}" ]; then
+          { echo '### launch-guard'; echo; echo '```text'; cat "$report"; echo '```'; } >> "$GITHUB_STEP_SUMMARY"
+        fi
+        exit "$code"

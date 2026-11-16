@@ -102,7 +102,7 @@ npx -y @voyageurworks/launch-guard-pack <repo>
 - `--fail-on warn` makes warnings fail the run too (exit code 1, `RESULT: FAIL`, `"result": "fail"` in `--json`). The default is `--fail-on block`. Expect a few warnings on most repositories (a missing SECURITY file, an extra ref), so use it where you want a strict gate.
 - `--explain <label>` prints what a report label means and what to do about it, for example `--explain "secret format"`. The text is the same as the table in "Reading the report" (a test fails if the two differ). An unknown label lists the known ones.
 - `--pack` scans the package `npm publish` would upload instead of the repository (see the section below). Run it as the step before `npm publish`.
-- [docs/ci.md](docs/ci.md) has a ready GitHub Actions job. A runner has no private list, so CI covers secrets, history, old commits and basics; the personal and restricted checks stay on your own machine.
+- [docs/ci.md](docs/ci.md) has a ready GitHub Actions job, and a one-line Action (`uses: voyageurworks/launch-guard-pack@main`). A runner has no private list, so CI covers secrets, history, old commits and basics; the personal and restricted checks stay on your own machine.
 
 ## Check what `npm publish` would ship: `--pack`
 
