@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.2.5 - 2026-11-16
+
+No change to the scanner or its output: the same command, flags and exit codes as 0.2.4. This release adds the GitHub Action under a version tag and brings the packaged README up to date.
+
+- **A composite GitHub Action** at the repository root (`uses: voyageurworks/launch-guard-pack@v0.2.5`). It replaces only the scan step of the CI job in [docs/ci.md](docs/ci.md): it runs the published `@voyageurworks/launch-guard-pack` with `--offline` (a CI runner has no private list), needs Node 22 or newer, passes its inputs (`path`, `pack`, `fail-on`, `version`) to the shell only through environment variables, and writes the report to the job summary. Checked by a test that reads `action.yml`.
+- Docs only: how to install from the GitHub name, whether an AI assistant can run a secret scanner (with a re-read of the gitleaks comparison), what `npm publish` would upload (a worked example), and a README banner.
+- macOS: see the release notes for what ran on this commit.
+
 ## 0.2.4 - 2026-11-09
 
 First-run polish; the report and `--json` are unchanged, and so are the exit codes except one (a missing git, below).
