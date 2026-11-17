@@ -1,5 +1,5 @@
 name: launch-guard
-description: Scan a git repository (or the npm package you are about to publish) for secrets, reachable old commits and basic publishing gaps before it goes public. Report-only; prints no secret. The personal and restricted-term checks need a private list, so they run only on your own machine.
+description: Scan a git repo or an npm package for secrets, old commits and publishing gaps before it goes public. Report-only.
 author: Voyageur Works
 branding:
   icon: shield
