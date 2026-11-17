@@ -66,7 +66,7 @@ The repository root holds a composite Action, so the scan step (`npx -y @voyageu
 
 Inputs: `path` (default `.`), `pack` (`true` scans what `npm pack` would upload, default `false`), `fail-on` (`block` or `warn`, default `block`) and `version` (a version range of the npm package, default `0`). The step exits 1 on a finding at or above `fail-on`, and 2 on a bad input or a Node older than 22. `@v0.2.5` is a release tag and cannot be moved; for the strongest pin, use the commit SHA of that release instead. `@main` follows the latest code. The `version` input (default `0`) picks which npm release of the scanner the Action runs; the Action file itself comes from the tag. It is not listed in the GitHub Marketplace yet.
 
-`launch-guard setup --ci` prints this same job. Prefer to keep the program inside your repository? Copy the `skill/` folder in and replace the last line with `- run: node tools/launch-guard/launch-guard.mjs . --offline` (the path of `launch-guard.mjs` inside your repository).
+`launch-guard setup --ci` prints the `npx` job from the start of this page, not the Action line. Prefer to keep the program inside your repository? Copy the `skill/` folder in and replace the last line with `- run: node tools/launch-guard/launch-guard.mjs . --offline` (the path of `launch-guard.mjs` inside your repository).
 
 The job fails (exit code 1) only on a blocking finding. To keep the report for other tools, add `--json` and save the output:
 
