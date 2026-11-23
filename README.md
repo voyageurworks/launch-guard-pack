@@ -18,20 +18,20 @@ You need Node 22 or newer and nothing else. It never edits the repository, and t
 
 ## What it looks like
 
-Real output on a throwaway repository whose `app.js` holds a fake AWS-style key:
+Real output (launch-guard-pack 0.2.5, 2026-11-22, no private list created yet) on a throwaway repository whose `app.js` holds a fake AWS-style key:
 
 ```text
 BLOCK (2)
   app.js:1 secret format
   4e4cc92:app.js:1 secret in history
 
-WARN (4)
-  list private list has no entries
+WARN (3)
   LICENSE missing LICENSE
   SECURITY missing SECURITY
   CI missing CI
 
-INFO (1)
+INFO (2)
+  list checks skipped: no private list
   remote no remote
 RESULT: FAIL
 ```
@@ -44,6 +44,15 @@ Try the same thing in 30 seconds, with no real secret (bash, macOS, Linux or Git
 mkdir launch-guard-demo && cd launch-guard-demo && git init -q
 printf "const k = 'AKIA%s';\n" ABCDEFGHIJKLMNOP > app.js
 git add . && git -c user.name=demo -c user.email=demo commit -qm demo
+npx -y @voyageurworks/launch-guard-pack . --offline
+```
+
+The same demo for Windows PowerShell (run on Windows 11 with Windows PowerShell 5.1 on 2026-11-22; the output matched the bash one apart from the commit id):
+
+```powershell
+mkdir launch-guard-demo; cd launch-guard-demo; git init -q
+"const k = 'AKIA" + "ABCDEFGHIJKLMNOP" + "';" | Set-Content -Encoding ascii app.js
+git add .; git -c user.name=demo -c user.email=demo commit -qm demo
 npx -y @voyageurworks/launch-guard-pack . --offline
 ```
 
