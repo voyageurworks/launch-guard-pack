@@ -18,20 +18,20 @@ You need Node 22 or newer and nothing else. It never edits the repository, and t
 
 ## What it looks like
 
-Real output on a throwaway repository whose `app.js` holds a fake AWS-style key:
+Real output (launch-guard-pack 0.2.5, 2026-11-22, no private list created yet) on a throwaway repository whose `app.js` holds a fake AWS-style key:
 
 ```text
 BLOCK (2)
   app.js:1 secret format
   4e4cc92:app.js:1 secret in history
 
-WARN (4)
-  list private list has no entries
+WARN (3)
   LICENSE missing LICENSE
   SECURITY missing SECURITY
   CI missing CI
 
-INFO (1)
+INFO (2)
+  list checks skipped: no private list
   remote no remote
 RESULT: FAIL
 ```
@@ -44,6 +44,15 @@ Try the same thing in 30 seconds, with no real secret (bash, macOS, Linux or Git
 mkdir launch-guard-demo && cd launch-guard-demo && git init -q
 printf "const k = 'AKIA%s';\n" ABCDEFGHIJKLMNOP > app.js
 git add . && git -c user.name=demo -c user.email=demo commit -qm demo
+npx -y @voyageurworks/launch-guard-pack . --offline
+```
+
+The same demo for Windows PowerShell (run on Windows 11 with Windows PowerShell 5.1 on 2026-11-22; the output matched the bash one apart from the commit id):
+
+```powershell
+mkdir launch-guard-demo; cd launch-guard-demo; git init -q
+"const k = 'AKIA" + "ABCDEFGHIJKLMNOP" + "';" | Set-Content -Encoding ascii app.js
+git add .; git -c user.name=demo -c user.email=demo commit -qm demo
 npx -y @voyageurworks/launch-guard-pack . --offline
 ```
 
@@ -102,7 +111,7 @@ npx -y @voyageurworks/launch-guard-pack <repo>
 - `--fail-on warn` makes warnings fail the run too (exit code 1, `RESULT: FAIL`, `"result": "fail"` in `--json`). The default is `--fail-on block`. Expect a few warnings on most repositories (a missing SECURITY file, an extra ref), so use it where you want a strict gate.
 - `--explain <label>` prints what a report label means and what to do about it, for example `--explain "secret format"`. The text is the same as the table in "Reading the report" (a test fails if the two differ). An unknown label lists the known ones.
 - `--pack` scans the package `npm publish` would upload instead of the repository (see the section below). Run it as the step before `npm publish`.
-- [docs/ci.md](docs/ci.md) has a ready GitHub Actions job. A runner has no private list, so CI covers secrets, history, old commits and basics; the personal and restricted checks stay on your own machine.
+- [docs/ci.md](docs/ci.md) has a ready GitHub Actions job, and a one-line Action (the `uses:` line is in that file, pinned to a release tag). A runner has no private list, so CI covers secrets, history, old commits and basics; the personal and restricted checks stay on your own machine.
 
 ## Check what `npm publish` would ship: `--pack`
 
